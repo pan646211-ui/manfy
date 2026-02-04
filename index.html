@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>محتار تفطر إيه؟ 🍳</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --orange: #ff6b35;
+    --yellow: #f7b731;
+    --green: #26de81;
+    --dark: #2c3e50;
+    --cream: #fef5e7;
+  }
+
+  body {
+    font-family: 'Cairo', sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* ─── Floating food emojis ─── */
+  .food-bg {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  }
+  .food-bg .f {
+    position: absolute;
+    font-size: 2rem;
+    opacity: 0.15;
+    animation: floatFood linear infinite;
+  }
+  @keyframes floatFood {
+    0%   { transform: translateY(110vh) rotate(0deg); opacity: 0; }
+    10%  { opacity: 0.15; }
+    90%  { opacity: 0.15; }
+    100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+  }
+
+  /* ─── Card container ─── */
+  .card {
+    position: relative; z-index: 1;
+    background: #fff;
+    border-radius: 32px;
+    box-shadow: 0 24px 80px rgba(0,0,0,.25);
+    padding: 48px 40px;
+    text-align: center;
+    max-width: 420px;
+    width: 90vw;
+    animation: cardIn .6s cubic-bezier(.22,1,.36,1) both;
+  }
+  @keyframes cardIn {
+    from { opacity:0; transform: translateY(40px) scale(.95); }
+    to   { opacity:1; transform: translateY(0) scale(1); }
+  }
+
+  /* ─── Question ─── */
+  .question {
+    font-size: clamp(1.8rem, 5vw, 2.3rem);
+    color: var(--dark);
+    font-weight: 900;
+    margin-bottom: 16px;
+    line-height: 1.3;
+  }
+  .emoji-big {
+    font-size: 4rem;
+    margin: 20px 0;
+    animation: bounce 1.5s ease-in-out infinite;
+  }
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-15px); }
+  }
+
+  .subtitle {
+    font-size: 1rem;
+    color: #7f8c8d;
+    margin-bottom: 32px;
+  }
+
+  /* ─── Button ─── */
+  .decide-btn {
+    background: linear-gradient(135deg, var(--orange), var(--yellow));
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    padding: 18px 48px;
+    font-family: 'Cairo', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 8px 30px rgba(255,107,53,.4);
+    transition: all .3s cubic-bezier(.22,1,.36,1);
+  }
+  .decide-btn:hover {
+    transform: scale(1.08) translateY(-3px);
+    box-shadow: 0 12px 40px rgba(255,107,53,.5);
+  }
+  .decide-btn:active {
+    transform: scale(.98);
+  }
+
+  /* ─── Wheel Screen ─── */
+  .wheel-screen {
+    position: fixed; inset: 0; z-index: 100;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity .5s ease;
+  }
+  .wheel-screen.show { opacity: 1; pointer-events: all; }
+
+  /* ─── Walking guy ─── */
+  .walking-guy {
+    width: 200px;
+    height: auto;
+    margin-bottom: 40px;
+    animation: walk 1.5s ease-in-out infinite, slideIn .8s cubic-bezier(.22,1,.36,1);
+    filter: drop-shadow(0 10px 30px rgba(0,0,0,.3));
+  }
+  @keyframes walk {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-8px) scale(1.02); }
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(-100px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  /* ─── Spin Wheel ─── */
+  .wheel-container {
+    position: relative;
+    width: 320px;
+    height: 320px;
+    margin: 0 auto 40px;
+  }
+
+  .wheel {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 0 0 12px rgba(255,255,255,.3),
+                0 15px 40px rgba(0,0,0,.4);
+    transition: transform 4s cubic-bezier(.17,.67,.12,.99);
+  }
+
+  .wheel-slice {
+    position: absolute;
+    width: 50%;
+    height: 50%;
+    transform-origin: 100% 100%;
+    overflow: hidden;
+  }
+  .wheel-slice:nth-child(1) { transform: rotate(0deg) skewY(-30deg); }
+  .wheel-slice:nth-child(2) { transform: rotate(120deg) skewY(-30deg); }
+  .wheel-slice:nth-child(3) { transform: rotate(240deg) skewY(-30deg); }
+
+  .wheel-slice .content {
+    position: absolute;
+    width: 200%;
+    height: 200%;
+    transform: skewY(30deg) rotate(60deg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #fff;
+    text-align: center;
+    padding: 20px;
+  }
+
+  .wheel-slice:nth-child(1) .content { background: #ff6b6b; }
+  .wheel-slice:nth-child(2) .content { background: #4ecdc4; }
+  .wheel-slice:nth-child(3) .content { background: #ffe66d; color: var(--dark); }
+
+  /* ─── Pointer ─── */
+  .pointer {
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 20px solid transparent;
+    border-right: 20px solid transparent;
+    border-top: 35px solid #fff;
+    filter: drop-shadow(0 4px 10px rgba(0,0,0,.3));
+    z-index: 10;
+  }
+
+  /* ─── Spin button ─── */
+  .spin-btn {
+    background: #fff;
+    color: var(--dark);
+    border: none;
+    border-radius: 50px;
+    padding: 16px 44px;
+    font-family: 'Cairo', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 8px 25px rgba(0,0,0,.2);
+    transition: all .3s ease;
+  }
+  .spin-btn:hover {
+    transform: scale(1.08);
+    box-shadow: 0 10px 35px rgba(0,0,0,.3);
+  }
+  .spin-btn:active {
+    transform: scale(.95);
+  }
+  .spin-btn:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+  }
+
+  /* ─── Result ─── */
+  .result {
+    margin-top: 30px;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #fff;
+    background: rgba(255,255,255,.15);
+    padding: 20px 30px;
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+    opacity: 0;
+    transition: opacity .5s ease;
+  }
+  .result.show {
+    opacity: 1;
+  }
+  .result-emoji {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+  }
+
+</style>
+</head>
+<body>
+
+<!-- floating food emojis background -->
+<div class="food-bg" id="foodBg"></div>
+
+<!-- main card -->
+<div class="card" id="mainCard">
+  <p class="question">محتار تفطر إيه؟</p>
+  <div class="emoji-big">🤔</div>
+  <p class="subtitle">خلينا نساعدك تاخد القرار</p>
+  <button class="decide-btn" onclick="startWheel()">يلا قرر!</button>
+</div>
+
+<!-- wheel screen -->
+<div class="wheel-screen" id="wheelScreen">
+  <img src="walking-guy.jpeg" alt="Walking" class="walking-guy" id="walkingGuy"/>
+  
+  <div class="wheel-container">
+    <div class="pointer"></div>
+    <div class="wheel" id="wheel">
+      <div class="wheel-slice">
+        <div class="content">🍟<br/>بطاطسيكو</div>
+      </div>
+      <div class="wheel-slice">
+        <div class="content">🥙<br/>عم إبراهيم</div>
+      </div>
+      <div class="wheel-slice">
+        <div class="content">🍲<br/>نعمة</div>
+      </div>
+    </div>
+  </div>
+
+  <button class="spin-btn" id="spinBtn" onclick="spinWheel()">لف العجلة!</button>
+  
+  <div class="result" id="result">
+    <div class="result-emoji" id="resultEmoji"></div>
+    <div id="resultText"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const options = [
+    { name: 'بطاطسيكو', emoji: '🍟', angle: 0 },
+    { name: 'عم إبراهيم', emoji: '🥙', angle: 120 },
+    { name: 'نعمة', emoji: '🍲', angle: 240 }
+  ];
+
+  let isSpinning = false;
+
+  // ── floating food background ──
+  const bg = document.getElementById('foodBg');
+  const foodEmojis = ['🍳','🥐','🧀','🥖','☕','🥞','🍯','🥓','🥗','🌯'];
+  for(let i=0; i<15; i++){
+    const el = document.createElement('div');
+    el.className = 'f';
+    el.textContent = foodEmojis[Math.floor(Math.random()*foodEmojis.length)];
+    el.style.cssText = `
+      left:${Math.random()*100}%;
+      font-size:${1.5 + Math.random()*1.5}rem;
+      animation-duration:${8+Math.random()*10}s;
+      animation-delay:${-Math.random()*12}s;
+    `;
+    bg.appendChild(el);
+  }
+
+  // ── start wheel screen ──
+  function startWheel(){
+    document.getElementById('wheelScreen').classList.add('show');
+  }
+
+  // ── spin the wheel ──
+  function spinWheel(){
+    if(isSpinning) return;
+    isSpinning = true;
+
+    const btn = document.getElementById('spinBtn');
+    const wheel = document.getElementById('wheel');
+    const result = document.getElementById('result');
+    
+    btn.disabled = true;
+    result.classList.remove('show');
+
+    // random selection
+    const selected = options[Math.floor(Math.random() * options.length)];
+    
+    // calculate spin: 5 full rotations + land on selected angle
+    // we need to align pointer (top) with the selected slice
+    // pointer points down, so we need to rotate to center of slice
+    const baseRotation = 360 * 5; // 5 full spins
+    const targetAngle = 360 - selected.angle - 60; // center of the slice
+    const totalRotation = baseRotation + targetAngle;
+
+    wheel.style.transform = `rotate(${totalRotation}deg)`;
+
+    // show result after spin
+    setTimeout(() => {
+      document.getElementById('resultEmoji').textContent = selected.emoji;
+      document.getElementById('resultText').textContent = `روح ${selected.name}! 🎉`;
+      result.classList.add('show');
+      btn.disabled = false;
+      isSpinning = false;
+    }, 4200);
+  }
+
+  // expose globally
+  window.startWheel = startWheel;
+  window.spinWheel = spinWheel;
+})();
+</script>
+</body>
+</html>
